@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuditTrail {
+  id           Int       @id @default(autoincrement())
+  Url          String    @db.VarChar(255)
+  ActionName   String    @db.VarChar(255)
+  MenuName     String    @db.VarChar(255)
+  DataBefore   String    @db.Text
+  DataAfter    String    @db.Text
+  UserName     String    @db.VarChar(255)
+  IpAddress    String    @db.VarChar(255)
+  ActivityDate DateTime
+  Browser      String    @db.VarChar(255)
+  OS           String    @db.VarChar(255)
+  AppSource    String    @db.VarChar(20)
+  created_by   Int
+  updated_by   Int
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  akses_user_id Int?
+  name          String
+  email         String    @unique
+  password      String
+  dob           DateTime?
+  phone         String?
+  created_by    Int?
+  updated_by    Int?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  akses       akses_user?   @relation(fields: [akses_user_id], references: [id_akses])
+  UserSession UserSession[]
+}
+
+model akses_user {
+  id_akses   Int       @id @default(autoincrement())
+  role       RoleType
+  code       String    @unique
+  created_by Int?
+  updated_by Int?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  User User[]
+}
+
+model Customer {
+  id            Int    @id @default(autoincrement())
+  alamat        String
+  customer_name String
+  phone         String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  Penjualan Penjualan[]
+}   
+
+enum RoleType {
+  supervisor
+  admin
+  kasir
+  guest
+}
+
+model Barang {
+  id          Int       @id @default(autoincrement())
+  image       String?   @db.Text
+  nama_barang String
+  category_id Int
+  category    Category  @relation(fields: [category_id], references: [id])
+  harga_beli  String
+  harga_jual  String
+  stock       Int?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  DetailPembelian DetailPembelian[]
+
+  DetailPenjualan DetailPenjualan[]
+}
+
+model Supplier {
+  id               Int       @id @default(autoincrement())
+  name             String?   @unique
+  address          String?
+  phone            String?
+  description      String?
+  established_date DateTime?
+  business_license String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  Pembelian Pembelian[]
+}
+
+model Pembelian {
+  id                Int      @id @default(autoincrement())
+  code              String  @unique
+  id_supplier       Int
+  tanggal_pembelian DateTime
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  supplier Supplier @relation(fields: [id_supplier], references: [id])
+
+  DetailPembelian DetailPembelian[]
+}
+
+model DetailPembelian {
+  id           Int    @id @default(autoincrement()) 
+  harga_beli   String
+  id_barang    Int
+  id_pembelian Int
+  quantity     Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  barang    Barang    @relation(fields: [id_barang], references: [id])
+  pembelian Pembelian @relation(fields: [id_pembelian], references: [id])
+}
+
+model Penjualan {
+  id          Int      @id @default(autoincrement())
+  code        String  @unique
+  id_customer Int
+  tanggal     DateTime
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  customer Customer @relation(fields: [id_customer], references: [id])
+
+  DetailPenjualan DetailPenjualan[]
+}
+
+model DetailPenjualan {
+  id           Int    @id @default(autoincrement())
+  id_barang    Int
+  id_penjualan Int
+  qty          Int
+  harga_jual   String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  barang    Barang    @relation(fields: [id_barang], references: [id])
+  penjualan Penjualan @relation(fields: [id_penjualan], references: [id])
+}
+
+model UserSession {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  identifier    String
+  access_token  String?
+  refresh_token String?
+  created_by    Int?
+  updated_by    Int?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, identifier])
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  Barang Barang[]
+}
