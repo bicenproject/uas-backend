@@ -8,6 +8,7 @@ import { UpdatePenjualanDto } from './dto/update-penjualan.dto';
 export class PenjualanService {  
   constructor(private readonly prisma: PrismaService) {}  
 
+  // Fungsi membuat code penjualan otomatis
   private async generatePenjualanCode(): Promise<string> {  
     const today = new Date();  
     const day = String(today.getDate()).padStart(2, '0');  
@@ -38,6 +39,7 @@ export class PenjualanService {
     return `PNJ-${day}${month}${year}${sequence}`;  
   }  
 
+// fungsi membuat create objek
 async create(createPenjualanDto: CreatePenjualanDto) {  
   const { details, ...penjualanData } = createPenjualanDto;  
   const code = await this.generatePenjualanCode();  
@@ -92,6 +94,7 @@ async create(createPenjualanDto: CreatePenjualanDto) {
   });  
 }
 
+// fungsi untuk mencari seluruh data
   async findAll() {  
     return this.prisma.penjualan.findMany({  
       include: {  
@@ -108,6 +111,7 @@ async create(createPenjualanDto: CreatePenjualanDto) {
     });  
   }  
 
+  // fungsi untuk mencari data terbaru
   async findRecent(limit: number = 5) {  
     try {  
       const transactions = await this.prisma.penjualan.findMany({  
@@ -141,6 +145,7 @@ async create(createPenjualanDto: CreatePenjualanDto) {
     }  
   }
 
+  // fungsi untuk mencari satu data
   async findOne(id: number) {  
     return this.prisma.penjualan.findUnique({  
       where: { id },  
@@ -155,6 +160,7 @@ async create(createPenjualanDto: CreatePenjualanDto) {
     });  
   }  
 
+  // fungsi untuk memperbarui data
   async update(id: number, updatePenjualanDto: UpdatePenjualanDto) {  
     return this.prisma.penjualan.update({  
       where: { id },  
@@ -170,6 +176,7 @@ async create(createPenjualanDto: CreatePenjualanDto) {
     });  
   }  
 
+  // fungsi untuk remove data
   async remove(id: number) {  
     const penjualan = await this.findOne(id);  
     if (!penjualan) {  
