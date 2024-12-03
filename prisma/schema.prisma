@@ -89,7 +89,7 @@ model Barang {
   nama_barang String
   category_id Int
   category    Category  @relation(fields: [category_id], references: [id])
-  harga_beli  String
+  harga_beli  String?
   harga_jual  String
   stock       Int?
   created_at  DateTime  @default(now())

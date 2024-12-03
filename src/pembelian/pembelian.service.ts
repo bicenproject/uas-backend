@@ -94,6 +94,39 @@ export class PembelianService {
     });  
   }  
 
+  async findRecent(limit: number = 5) {  
+    try {  
+      const transactions = await this.prisma.pembelian.findMany({  
+        take: limit,  
+        orderBy: {  
+          created_at: 'desc'  
+        },  
+        include: {  
+          supplier: true,  
+          DetailPembelian: {  
+            include: {  
+              barang: true  
+            }  
+          }  
+        },  
+        where: {  
+          deleted_at: null  
+        }  
+      });  
+  
+      return transactions.map(transaction => ({  
+        ...transaction,  
+        total: transaction.DetailPembelian.reduce(  
+          (sum, detail) => sum + (parseInt(detail.harga_beli) * detail.quantity),   
+          0  
+        )  
+      }));  
+    } catch (error) {  
+      console.error('Error in findRecent:', error);  
+      return [];  
+    }  
+  }
+
   async findOne(id: number) {  
     return this.prisma.pembelian.findUnique({  
       where: { id },  

@@ -24,6 +24,7 @@ import {
   import { Roles } from '@backend/common/decorator/roles.decorator';  
   import { UserAkses } from '@backend/common/constants/enum';  
   import { ParamIdDto } from 'src/common/decorator/param-id.dto';  
+import { Public } from '@backend/common/decorator/guest.decorator';
   
   @UseGuards(AccessTokenGuard, RolesGuard)  
   @Controller('category')  
@@ -86,6 +87,7 @@ import {
       }  
     }  
   
+    @Public()
     @Get()  
     async findAll(): Promise<CategoryEntity[]> {  
       const products = await this.categoryService.findAll();  

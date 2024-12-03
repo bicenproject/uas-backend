@@ -108,6 +108,39 @@ async create(createPenjualanDto: CreatePenjualanDto) {
     });  
   }  
 
+  async findRecent(limit: number = 5) {  
+    try {  
+      const transactions = await this.prisma.penjualan.findMany({  
+        take: limit,  
+        orderBy: {  
+          created_at: 'desc'  
+        },  
+        include: {  
+          customer: true,  
+          DetailPenjualan: {  
+            include: {  
+              barang: true  
+            }  
+          }  
+        },  
+        where: {  
+          deleted_at: null  
+        }  
+      });  
+  
+      return transactions.map(transaction => ({  
+        ...transaction,  
+        total: transaction.DetailPenjualan.reduce(  
+          (sum, detail) => sum + (parseInt(detail.harga_jual) * detail.qty),   
+          0  
+        )  
+      }));  
+    } catch (error) {  
+      console.error('Error in findRecent:', error);  
+      return [];  
+    }  
+  }
+
   async findOne(id: number) {  
     return this.prisma.penjualan.findUnique({  
       where: { id },  

@@ -8,6 +8,7 @@ import {
     Param,  
     Patch,  
     Post,  
+    Query,  
     Req,  
     UseGuards,  
   } from '@nestjs/common';  
@@ -87,6 +88,29 @@ import { PembelianEntity } from './entity/pembelian.entity';
       const pembelians = await this.pembelianService.findAll();  
       return transformEntity(PembelianEntity, pembelians);  
     }  
+
+    @Get('recent')
+    @Roles(UserAkses.ADMIN, UserAkses.SUPERVISOR)
+    async getRecentTransactions(@Query('limit') limit = 5): Promise<any> {
+      try {
+        const recentTransactions = await this.pembelianService.findRecent(limit);
+        return {
+          status: {
+            code: 200,
+            description: 'OK',
+          },
+          result: recentTransactions,
+        };
+      } catch (error) {
+        return {
+          status: {
+            code: 500,
+            description: 'Internal Server Error',
+          },
+          result: [],
+        };
+      }
+    }
   
     @Get(':id')  
     async findOne(@Param() param: ParamIdDto): Promise<PembelianEntity> {  

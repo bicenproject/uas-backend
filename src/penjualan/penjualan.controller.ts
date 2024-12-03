@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -27,7 +28,7 @@ import { PenjualanEntity } from './entity/penjualan.entity';
 
 @UseGuards(AccessTokenGuard, RolesGuard)
 @Controller('penjualan')
-@Roles(UserAkses.ADMIN)
+@Roles(UserAkses.KASIR)
 export class PenjualanController {
   constructor(
     private readonly penjualanService: PenjualanService,
@@ -82,12 +83,37 @@ export class PenjualanController {
   }
 
   @Get()
+  @Roles(UserAkses.ADMIN, UserAkses.SUPERVISOR,  UserAkses.KASIR)
   async findAll(): Promise<PenjualanEntity[]> {
     const penjualans = await this.penjualanService.findAll();
     return transformEntity(PenjualanEntity, penjualans);
   }
 
+  @Get('recent')
+  @Roles(UserAkses.ADMIN, UserAkses.SUPERVISOR, UserAkses.KASIR)
+  async getRecentTransactions(@Query('limit') limit = 5): Promise<any> {
+    try {
+      const recentTransactions = await this.penjualanService.findRecent(limit);
+      return {
+        status: {
+          code: 200,
+          description: 'OK',
+        },
+        result: recentTransactions,
+      };
+    } catch (error) {
+      return {
+        status: {
+          code: 500,
+          description: 'Internal Server Error',
+        },
+        result: [],
+      };
+    }
+  }
+
   @Get(':id')
+  @Roles(UserAkses.ADMIN, UserAkses.SUPERVISOR,  UserAkses.KASIR)
   async findOne(@Param() param: ParamIdDto): Promise<PenjualanEntity> {
     const find = await this.penjualanService.findOne(param.id);
     if (!find) throw new BadRequestException('Penjualan not found.');
